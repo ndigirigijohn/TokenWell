@@ -1,0 +1,76 @@
+{
+  "preamble": {
+    "title": "ndigirigijohn/tokenwell-sc",
+    "description": "Aiken contracts for project 'ndigirigijohn/tokenwell-sc'",
+    "version": "0.0.0",
+    "plutusVersion": "v3",
+    "compiler": {
+      "name": "Aiken",
+      "version": "v1.1.15+unknown"
+    },
+    "license": "Apache-2.0"
+  },
+  "validators": [
+    {
+      "title": "token_well/tokenwell.tokenwell.mint",
+      "redeemer": {
+        "title": "redeemer",
+        "schema": {
+          "$ref": "#/definitions/Data"
+        }
+      },
+      "parameters": [
+        {
+          "title": "params",
+          "schema": {
+            "$ref": "#/definitions/tokenwell~1types~1MintParams"
+          }
+        }
+      ],
+      "compiledCode": "59018f010100229800aba2aba1aab9faab9eaab9dab9a48888896600264653001300700198039804000cc01c0092225980099b8748000c01cdd500144c8cc89660026464660020026eb0c03cc040c040c040c040c040c040c040c040c034dd5003112cc00400629422b30013371e6eb8c04000400e29462660040046022002806100f1bae300d300b375402115980099b884800000a264b30010018a508acc004c03c006264b30013371e6eb8c030004dd71807802c4cdc39bad300d0010048a50402c601c00314a0806900d1919198008009bab300f3010301030103010300d375400c44b3001001801c4c8cc896600266e4401c00a2b30013371e00e0051001803201e899802802980a002201e375c601c0026eacc03c004c04000500f0a5eb7bdb182294100945282012375a601660180026eb8c02cc024dd500198041baa5980099b8748000c01cdd5001c4c8c8ca60026eb8c0340066eb8c03400e6eb4c034009222598009808802440262c8078601a002601800260106ea800e2c80322c8030600e00260066ea801e29344d9590011",
+      "hash": "3ce85dc6337050d216aff0fb86df1a80ffa1710c3f6f4e41398c4143"
+    },
+    {
+      "title": "token_well/tokenwell.tokenwell.else",
+      "redeemer": {
+        "schema": {}
+      },
+      "parameters": [
+        {
+          "title": "params",
+          "schema": {
+            "$ref": "#/definitions/tokenwell~1types~1MintParams"
+          }
+        }
+      ],
+      "compiledCode": "59018f010100229800aba2aba1aab9faab9eaab9dab9a48888896600264653001300700198039804000cc01c0092225980099b8748000c01cdd500144c8cc89660026464660020026eb0c03cc040c040c040c040c040c040c040c040c034dd5003112cc00400629422b30013371e6eb8c04000400e29462660040046022002806100f1bae300d300b375402115980099b884800000a264b30010018a508acc004c03c006264b30013371e6eb8c030004dd71807802c4cdc39bad300d0010048a50402c601c00314a0806900d1919198008009bab300f3010301030103010300d375400c44b3001001801c4c8cc896600266e4401c00a2b30013371e00e0051001803201e899802802980a002201e375c601c0026eacc03c004c04000500f0a5eb7bdb182294100945282012375a601660180026eb8c02cc024dd500198041baa5980099b8748000c01cdd5001c4c8c8ca60026eb8c0340066eb8c03400e6eb4c034009222598009808802440262c8078601a002601800260106ea800e2c80322c8030600e00260066ea801e29344d9590011",
+      "hash": "3ce85dc6337050d216aff0fb86df1a80ffa1710c3f6f4e41398c4143"
+    }
+  ],
+  "definitions": {
+    "ByteArray": {
+      "dataType": "bytes"
+    },
+    "Data": {
+      "title": "Data",
+      "description": "Any Plutus data."
+    },
+    "tokenwell/types/MintParams": {
+      "title": "MintParams",
+      "description": "Parameters applied to the minting policy at compile time.\n - `operator_pkh`: public key hash that must sign V1 mints.",
+      "anyOf": [
+        {
+          "title": "MintParams",
+          "dataType": "constructor",
+          "index": 0,
+          "fields": [
+            {
+              "title": "operator_pkh",
+              "$ref": "#/definitions/ByteArray"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

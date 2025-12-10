@@ -1,3 +1,4 @@
+use aiken/collection/list
 use cardano/transaction.{Transaction}
 
 /// Parameters applied to the minting policy at compile time.
@@ -9,22 +10,23 @@ pub type MintParams {
 /// Redeemer used by the V1 minting policy.
 /// Kept structured so we can evolve without breaking the interface.
 pub type MintRedeemer {
-  Mint {
-    token_name: ByteArray,
-    quantity: Int,
-    recipient: ByteArray,
-  }
+  Mint { token_name: ByteArray, quantity: Int, recipient: ByteArray }
 }
 
 /// Decode raw redeemer data into the typed V1 redeemer.
-/// TODO: Parse and validate the incoming redeemer fields.
-pub fn decode_mint_redeemer(_redeemer: Data) -> MintRedeemer {
-  todo @"Decode mint redeemer to MintRedeemer (token_name, quantity, recipient)"
+/// TODO: Add field-level validation (e.g., non-empty name, positive quantity).
+pub fn decode_mint_redeemer(redeemer: Data) -> MintRedeemer {
+  // Expect the on-chain redeemer to match the MintRedeemer shape.
+  // Fails validation if the caller provides an unexpected data layout.
+  expect mint_redeemer: MintRedeemer = redeemer
+  mint_redeemer
 }
 
 /// Verify the operator signature for V1.
-/// TODO: Check `tx.extra_signatories` for `operator_pkh`.
-pub fn require_operator_signature(_tx: Transaction, _operator_pkh: ByteArray) -> Bool {
-  todo @"Ensure operator signature is present in the transaction"
+pub fn require_operator_signature(
+  tx: Transaction,
+  operator_pkh: ByteArray,
+) -> Bool {
+  // Succeeds only if the operator's key hash is in the extra signatories list.
+  list.has(tx.extra_signatories, operator_pkh)
 }
-

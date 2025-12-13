@@ -1,0 +1,5 @@
+{
+  "network": "preview",
+  "description": "Change 'network' to 'preview' or 'preprod' to deploy to that network"
+}
+

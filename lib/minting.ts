@@ -1,17 +1,18 @@
-import { Lucid, applyParamsToScript, MintingPolicy, PolicyId, Data } from "@lucid-evolution/lucid";
+import { Lucid, applyParamsToScript, MintingPolicy, PolicyId, Data, mintingPolicyToId } from "@lucid-evolution/lucid";
 import { initLucid, loadPlatformWallet, getOperatorPkh } from "./lucid";
 import plutusBlueprint from "@/tokenwell-sc/plutus.json";
+import { bech32 } from "bech32";
 
 /**
  * Get the compiled minting policy from plutus.json
  */
 function getCompiledCode(): string {
   const validator = plutusBlueprint.validators.find(
-    (v) => v.title === "token_well.tokenwell"
+    (v) => v.title.includes("tokenwell") && v.title.includes("mint")
   );
   
   if (!validator) {
-    throw new Error("TokenWell validator not found in plutus.json");
+    throw new Error("TokenWell minting validator not found in plutus.json");
   }
 
   return validator.compiledCode;
@@ -34,31 +35,10 @@ export function getMintingPolicy(operatorPkh: string): MintingPolicy {
 
 /**
  * Get policy ID from the minting policy
+ * Note: In Lucid Evolution 0.4.x, mintingPolicyToId is a standalone function
  */
-export function getPolicyId(mintingPolicy: MintingPolicy, lucid: Lucid): PolicyId {
-  return lucid.utils.mintingPolicyToId(mintingPolicy);
-}
-
-/**
- * Build minting redeemer
- */
-export function buildMintRedeemer(
-  tokenName: string,
-  quantity: number,
-  recipient: string
-): string {
-  // Convert token name to hex
-  const tokenNameHex = Buffer.from(tokenName).toString('hex');
-  
-  // Build redeemer matching the Mint type from types.ak
-  // Mint { token_name: ByteArray, quantity: Int, recipient: ByteArray }
-  const redeemer = Data.to({
-    token_name: tokenNameHex,
-    quantity: BigInt(quantity),
-    recipient: recipient,
-  });
-
-  return redeemer;
+export function getPolicyId(mintingPolicy: MintingPolicy): PolicyId {
+  return mintingPolicyToId(mintingPolicy);
 }
 
 /**
@@ -84,30 +64,36 @@ export async function mintTestTokens(params: {
 
     // Get minting policy
     const mintingPolicy = getMintingPolicy(operatorPkh);
-    const policyId = getPolicyId(mintingPolicy, lucid);
-
-    // Build redeemer
-    const redeemer = buildMintRedeemer(tokenName, quantity, recipientAddress);
+    const policyId = getPolicyId(mintingPolicy);
 
     // Convert token name to hex for minting
     const tokenNameHex = Buffer.from(tokenName).toString('hex');
 
-    // Build transaction
-    const tx = await lucid
-      .newTx()
-      .mint(
-        {
-          [policyId]: {
-            [tokenNameHex]: BigInt(quantity),
-          },
-        },
-        redeemer
-      )
-      .pay.ToAddress(recipientAddress, {
-        [policyId]: {
-          [tokenNameHex]: BigInt(quantity),
-        },
-      })
+    // Convert bech32 address to hex bytes for the redeemer
+    const decoded = bech32.decode(recipientAddress, 1000);
+    const addressBytes = Buffer.from(bech32.fromWords(decoded.words));
+    const recipientHex = addressBytes.toString('hex');
+
+    // Build redeemer as Constructor (not Array!)
+    // The Aiken Mint type expects: Constr(0, [token_name, quantity, recipient])
+    const mintRedeemer = {
+      index: 0,
+      fields: [tokenNameHex, BigInt(quantity), recipientHex]
+    };
+    
+    const redeemerData = Data.to(mintRedeemer);
+
+    // Build transaction using Lucid Evolution's API
+    const txBuilder = lucid.newTx();
+    
+    // Mint assets using the correct format for Lucid Evolution
+    // Assets should be: { [unit]: amount } where unit = policyId + assetName
+    const unit = policyId + tokenNameHex;
+    const assets = { [unit]: BigInt(quantity) };
+    
+    const tx = await txBuilder
+      .mintAssets(assets, redeemerData)
+      .pay.ToAddress(recipientAddress, assets)
       .attach.MintingPolicy(mintingPolicy)
       .complete();
 

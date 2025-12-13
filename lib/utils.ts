@@ -39,23 +39,4 @@ export function isValidCardanoAddress(address: string): boolean {
   return /^addr_test1[a-z0-9]{53,}$/i.test(address);
 }
 
-/**
- * Convert hex string to ASCII
- */
-export function hexToAscii(hex: string): string {
-  let str = '';
-  for (let i = 0; i < hex.length; i += 2) {
-    str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
-  }
-  return str;
-}
-
-/**
- * Convert ASCII to hex string
- */
-export function asciiToHex(str: string): string {
-  return Array.from(str)
-    .map(c => c.charCodeAt(0).toString(16).padStart(2, '0'))
-    .join('');
-}
 
